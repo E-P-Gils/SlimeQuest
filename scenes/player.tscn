@@ -1,7 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://dlbeyd1o0yw14"]
+[gd_scene load_steps=12 format=3 uid="uid://dlbeyd1o0yw14"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_2w1fj"]
 [ext_resource type="Texture2D" uid="uid://ke2m4urdkb0m" path="res://assets/sprites/SlimeHero.png" id="2_xgum4"]
+[ext_resource type="Texture2D" uid="uid://dn1xe3wchksqv" path="res://assets/sprites/SlimeClimbing.png" id="3_wdqmg"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d04qb"]
 atlas = ExtResource("2_xgum4")
@@ -18,6 +19,14 @@ region = Rect2(48, 0, 24, 15)
 [sub_resource type="AtlasTexture" id="AtlasTexture_1ceiu"]
 atlas = ExtResource("2_xgum4")
 region = Rect2(72, 0, 24, 15)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xq4cb"]
+atlas = ExtResource("3_wdqmg")
+region = Rect2(0, 0, 24, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6twny"]
+atlas = ExtResource("3_wdqmg")
+region = Rect2(24, 0, 24, 21)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_k5roa"]
 animations = [{
@@ -37,6 +46,17 @@ animations = [{
 "loop": true,
 "name": &"Idle",
 "speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xq4cb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6twny")
+}],
+"loop": true,
+"name": &"WallClimb",
+"speed": 4.0
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dueuf"]
@@ -48,9 +68,8 @@ script = ExtResource("1_2w1fj")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -8)
 sprite_frames = SubResource("SpriteFrames_k5roa")
-animation = &"Idle"
+animation = &"WallClimb"
 autoplay = "Idle"
-frame_progress = 0.92654
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -5)
