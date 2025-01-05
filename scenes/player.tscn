@@ -66,6 +66,7 @@ radius = 6.0
 script = ExtResource("1_2w1fj")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+z_index = 4
 position = Vector2(0, -8)
 sprite_frames = SubResource("SpriteFrames_k5roa")
 animation = &"WallClimb"
