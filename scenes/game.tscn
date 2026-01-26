@@ -1,9 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://ce34xmawcycih"]
+[gd_scene load_steps=18 format=3 uid="uid://ce34xmawcycih"]
 
 [ext_resource type="PackedScene" uid="uid://dlbeyd1o0yw14" path="res://scenes/player.tscn" id="1_2wchk"]
 [ext_resource type="Texture2D" uid="uid://cc33jj161dglm" path="res://assets/sprites/world_tileset.png" id="2_k3u6b"]
+[ext_resource type="Script" uid="uid://7d256ebb8qu7" path="res://scenes/camera_2d.gd" id="2_p57ef"]
 [ext_resource type="PackedScene" uid="uid://c1mbjhiam67pf" path="res://scenes/platform_green.tscn" id="3_eeb52"]
 [ext_resource type="PackedScene" uid="uid://b8tak4hbjhm2" path="res://scenes/desert_platform.tscn" id="4_xjbp0"]
+[ext_resource type="Texture2D" uid="uid://dd0x7y1mkfpvg" path="res://assets/ChatGPT Image Jan 26, 2026, 08_23_13 PM.png" id="5_iywne"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tun8l"]
 texture = ExtResource("2_k3u6b")
@@ -181,8 +183,8 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_3bk8o"]
 _data = {
-"MoveBackForthTree": SubResource("Animation_n261u"),
-"RESET": SubResource("Animation_k02dg")
+&"MoveBackForthTree": SubResource("Animation_n261u"),
+&"RESET": SubResource("Animation_k02dg")
 }
 
 [sub_resource type="Animation" id="Animation_ml8hj"]
@@ -219,9 +221,18 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_67fn5"]
 _data = {
-"MoveDesertAnimation": SubResource("Animation_ml8hj"),
-"RESET": SubResource("Animation_egkwa")
+&"MoveDesertAnimation": SubResource("Animation_ml8hj"),
+&"RESET": SubResource("Animation_egkwa")
 }
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_iywne"]
+size = Vector2(3228, 11)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p57ef"]
+size = Vector2(321.5, 1847)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_u5sy4"]
+size = Vector2(95.5, 1823.5)
 
 [node name="Game" type="Node2D"]
 
@@ -231,6 +242,7 @@ position = Vector2(-7, 6)
 [node name="Camera2D" type="Camera2D" parent="Player"]
 position = Vector2(0, -12)
 zoom = Vector2(4, 4)
+script = ExtResource("2_p57ef")
 
 [node name="TileMap" type="TileMap" parent="."]
 position = Vector2(0, 2)
@@ -243,7 +255,7 @@ position = Vector2(-714, 882)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="PlatformGreen"]
 libraries = {
-"": SubResource("AnimationLibrary_3bk8o")
+&"": SubResource("AnimationLibrary_3bk8o")
 }
 autoplay = "MoveBackForthTree"
 
@@ -252,6 +264,26 @@ position = Vector2(-1748, 1054)
 
 [node name="MoveDesert" type="AnimationPlayer" parent="DesertPlatform"]
 libraries = {
-"": SubResource("AnimationLibrary_67fn5")
+&"": SubResource("AnimationLibrary_67fn5")
 }
 autoplay = "MoveDesertAnimation"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+z_index = -20
+position = Vector2(12, 418.50003)
+scale = Vector2(2.1302085, 1.7607422)
+texture = ExtResource("5_iywne")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(31, 1299.5)
+shape = SubResource("RectangleShape2D_iywne")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(-1739.75, 405.5)
+shape = SubResource("RectangleShape2D_p57ef")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(1682.75, 436.25)
+shape = SubResource("RectangleShape2D_u5sy4")
