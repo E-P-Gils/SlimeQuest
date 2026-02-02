@@ -1,10 +1,16 @@
-[gd_scene load_steps=17 format=3 uid="uid://ce34xmawcycih"]
+[gd_scene load_steps=23 format=3 uid="uid://ce34xmawcycih"]
 
 [ext_resource type="PackedScene" uid="uid://dlbeyd1o0yw14" path="res://scenes/player.tscn" id="1_2wchk"]
 [ext_resource type="Texture2D" uid="uid://cc33jj161dglm" path="res://assets/sprites/world_tileset.png" id="2_k3u6b"]
 [ext_resource type="Script" uid="uid://7d256ebb8qu7" path="res://scenes/camera_2d.gd" id="2_p57ef"]
 [ext_resource type="PackedScene" uid="uid://c1mbjhiam67pf" path="res://scenes/platform_green.tscn" id="3_eeb52"]
 [ext_resource type="PackedScene" uid="uid://b8tak4hbjhm2" path="res://scenes/desert_platform.tscn" id="4_xjbp0"]
+[ext_resource type="PackedScene" uid="uid://dhs2b1yu478gp" path="res://scenes/actionrock.tscn" id="6_p57ef"]
+[ext_resource type="Script" uid="uid://dnbfpyx1ctwwr" path="res://scenes/actionrock.gd" id="7_gee14"]
+[ext_resource type="Texture2D" uid="uid://kfsifn0jqe5f" path="res://assets/sprites/actionblock.png" id="7_u5sy4"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vtaks"]
+size = Vector2(13, 8)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tun8l"]
 texture = ExtResource("2_k3u6b")
@@ -233,6 +239,12 @@ size = Vector2(321.5, 1847)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_u5sy4"]
 size = Vector2(95.5, 1823.5)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gee14"]
+size = Vector2(11.75, 11)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0tnpc"]
+size = Vector2(12, 10)
+
 [node name="Game" type="Node2D"]
 
 [node name="Player" parent="." instance=ExtResource("1_2wchk")]
@@ -242,6 +254,17 @@ position = Vector2(-7, 6)
 position = Vector2(0, -12)
 zoom = Vector2(4, 4)
 script = ExtResource("2_p57ef")
+
+[node name="PickupDetector" type="Area2D" parent="Player"]
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/PickupDetector"]
+position = Vector2(-1.5, -7)
+shape = SubResource("RectangleShape2D_vtaks")
+
+[node name="HoldPoint" type="Marker2D" parent="Player"]
+position = Vector2(-1, -14)
+gizmo_extents = 0.0
 
 [node name="TileMap" type="TileMap" parent="."]
 position = Vector2(0, 2)
@@ -280,3 +303,22 @@ shape = SubResource("RectangleShape2D_p57ef")
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(1682.75, 436.25)
 shape = SubResource("RectangleShape2D_u5sy4")
+
+[node name="ActionBlock" parent="." instance=ExtResource("6_p57ef")]
+collision_layer = 2
+script = ExtResource("7_gee14")
+
+[node name="Sprite2D" type="Sprite2D" parent="ActionBlock"]
+position = Vector2(39.812496, 44.46649)
+scale = Vector2(0.01794434, 0.014582992)
+texture = ExtResource("7_u5sy4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ActionBlock"]
+position = Vector2(40, 44.5)
+shape = SubResource("RectangleShape2D_gee14")
+
+[node name="Solid" type="StaticBody2D" parent="ActionBlock"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ActionBlock/Solid"]
+position = Vector2(40, 44)
+shape = SubResource("RectangleShape2D_0tnpc")
