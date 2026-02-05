@@ -1,3 +1,29 @@
-[gd_scene format=3 uid="uid://dhs2b1yu478gp"]
+[gd_scene load_steps=4 format=3 uid="uid://dhs2b1yu478gp"]
 
-[node name="Area2D" type="Area2D"]
+[ext_resource type="Texture2D" uid="uid://kfsifn0jqe5f" path="res://assets/sprites/actionblock.png" id="1_wpj6l"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4lnq7"]
+size = Vector2(16, 11)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vb6na"]
+size = Vector2(14, 11)
+
+[node name="ActionBlock" type="Node2D"]
+
+[node name="PickupArea" type="Area2D" parent="."]
+collision_layer = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupArea"]
+position = Vector2(1, -1.5)
+shape = SubResource("RectangleShape2D_4lnq7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(1, -1)
+scale = Vector2(0.01794434, 0.014582992)
+texture = ExtResource("1_wpj6l")
+
+[node name="Solid" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Solid"]
+position = Vector2(1, -1)
+shape = SubResource("RectangleShape2D_vb6na")

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2u6bijcgufcv"
-path="res://.godot/imported/Slime3_Idle_with_shadow.png-2e2b42f6ca018b9b13730e324256e45f.ctex"
+path="res://.godot/imported/Slime3_Idle_with_shadow.png-99e2eac102e940bfd84d589b3af83785.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/RPGSection/Characters/Devil Slime/Slime3_Idle_with_shadow.png"
-dest_files=["res://.godot/imported/Slime3_Idle_with_shadow.png-2e2b42f6ca018b9b13730e324256e45f.ctex"]
+source_file="res://assets/sprites/RPGSection/Characters/Enemy Slimes/Slime3_Idle_with_shadow.png"
+dest_files=["res://.godot/imported/Slime3_Idle_with_shadow.png-99e2eac102e940bfd84d589b3af83785.ctex"]
 
 [params]
 

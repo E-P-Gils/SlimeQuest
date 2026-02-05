@@ -1,13 +1,15 @@
-extends Area2D
+extends Node2D
 
 @onready var solid_shape: CollisionShape2D = $Solid/CollisionShape2D
+@onready var pickup_area: Area2D = $PickupArea
 
 var carried: bool = false
 
 func set_carried(value: bool) -> void:
 	carried = value
-	# Turn off solid collision while carried so it doesn't push/jitter the player
+
+	# Disable solid collision while carried
 	solid_shape.disabled = value
 
-	# Optional: stop the pickup area from detecting while carried
-	monitoring = not value
+	# Disable pickup detection while carried
+	pickup_area.monitoring = not value

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dk0pre4fp3hvv"
-path="res://.godot/imported/Slime3_Death_with_shadow.png-61e30e83aca2d8996ca8eff430fb8a40.ctex"
+path="res://.godot/imported/Slime3_Death_with_shadow.png-b1e684d38ecf7803969ce5dd0a79f6eb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/RPGSection/Characters/Devil Slime/Slime3_Death_with_shadow.png"
-dest_files=["res://.godot/imported/Slime3_Death_with_shadow.png-61e30e83aca2d8996ca8eff430fb8a40.ctex"]
+source_file="res://assets/sprites/RPGSection/Characters/Enemy Slimes/Slime3_Death_with_shadow.png"
+dest_files=["res://.godot/imported/Slime3_Death_with_shadow.png-b1e684d38ecf7803969ce5dd0a79f6eb.ctex"]
 
 [params]
 

@@ -11,41 +11,34 @@ var state = STATES.WALK
 @onready var pickup_detector: Area2D = $PickupDetector
 @onready var hold_point: Marker2D = $HoldPoint
 
-# --- Carry variables ---
-var carried_block: Area2D = null
+var carried_block: Node2D = null
+var facing_dir: int = 1
 
 func _physics_process(delta: float) -> void:
-	# --- Interact key (pick up / drop) ---
 	if Input.is_action_just_pressed("interact"):
 		if carried_block:
 			drop_block()
 		else:
 			try_pickup_block()
 
-	# Keep carried block glued to HoldPoint (use global to avoid teleporting)
-	if carried_block:
-		carried_block.global_position = hold_point.global_position
-
+	# movement/state
 	if state == STATES.WALK:
 		walk_state(delta)
 	else:
 		wall_state(delta)
 
 	move_and_slide()
+	# NOTE: no more “glue” code needed when parented to HoldPoint
 
 
 func try_pickup_block() -> void:
-	# Find any carriable block in range (robust: doesn't rely on node name)
 	for area in pickup_detector.get_overlapping_areas():
-		# Case 1: overlapping the block root Area2D
-		if area.has_method("set_carried") and not area.carried:
-			pick_up(area)
-			return
+		var n: Node = area
+		while n and not n.has_method("set_carried"):
+			n = n.get_parent()
 
-		# Case 2: overlapping a child Area2D (common)
-		var p := area.get_parent()
-		if p and p.has_method("set_carried") and not p.carried:
-			pick_up(p)
+		if n and not n.carried:
+			pick_up(n as Node2D)
 			return
 
 
@@ -53,33 +46,24 @@ func pick_up(block: Node2D) -> void:
 	carried_block = block
 	carried_block.set_carried(true)
 
-	# Reparent while preserving world transform (prevents random jumps)
-	var world_pos := carried_block.global_position
-	carried_block.get_parent().remove_child(carried_block)
-	add_child(carried_block)
-	carried_block.global_position = world_pos
+	# Parent it to HoldPoint so it inherits the marker transform
+	carried_block.reparent(hold_point, true)
 
-	# Snap to hold point
-	carried_block.global_position = hold_point.global_position
+	# Force it to sit exactly on HoldPoint (local space)
+	carried_block.position = Vector2.ZERO
 
 
 func drop_block() -> void:
 	var block := carried_block
 	carried_block = null
 
-	# Reparent back to the level (player's parent)
-	remove_child(block)
-	get_parent().add_child(block)
+	# Put it back in the level
+	block.reparent(get_parent(), true)
 
-	# Drop in front of player based on input direction (fallback to +1)
-	var dir := 1
-	var axis := Input.get_axis("ui_left", "ui_right")
-	if axis != 0:
-		dir = sign(axis)
+	# Drop in front of player (use facing_dir even if no input)
+	block.global_position = global_position + Vector2(16 * facing_dir, 0)
 
-	block.global_position = global_position + Vector2(16 * dir, 0)
 	block.set_carried(false)
-
 
 func walk_state(delta: float) -> void:
 	# Only allow transition to wall state when near a wall and pressing "ui_up"
@@ -99,6 +83,7 @@ func walk_state(delta: float) -> void:
 	# Handle horizontal movement based on left/right inputs
 	var direction := Input.get_axis("ui_left", "ui_right")
 	if direction != 0:
+		facing_dir = sign(direction)
 		velocity.x = direction * SPEED
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
@@ -126,6 +111,7 @@ func wall_state(delta: float) -> void:
 
 	# Handle left/right boost jumps from wall
 	if Input.is_action_just_pressed("ui_left"):
+		facing_dir = -1
 		velocity.x = -SPEED * 1.5
 		velocity.y = JUMP_VELOCITY
 		state = STATES.WALK
@@ -133,6 +119,7 @@ func wall_state(delta: float) -> void:
 		return
 
 	if Input.is_action_just_pressed("ui_right"):
+		facing_dir = 1
 		velocity.x = SPEED * 1.5
 		velocity.y = JUMP_VELOCITY
 		state = STATES.WALK

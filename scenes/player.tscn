@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://dlbeyd1o0yw14"]
+[gd_scene load_steps=14 format=3 uid="uid://dlbeyd1o0yw14"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1_2w1fj"]
+[ext_resource type="Script" uid="uid://bqgn8gmko0jxw" path="res://scripts/player.gd" id="1_2w1fj"]
 [ext_resource type="Texture2D" uid="uid://ke2m4urdkb0m" path="res://assets/sprites/SlimeHero.png" id="2_xgum4"]
 [ext_resource type="Texture2D" uid="uid://dn1xe3wchksqv" path="res://assets/sprites/SlimeClimbing.png" id="3_wdqmg"]
+[ext_resource type="Script" uid="uid://7d256ebb8qu7" path="res://scenes/camera_2d.gd" id="4_dqkch"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d04qb"]
 atlas = ExtResource("2_xgum4")
@@ -62,18 +63,19 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_dueuf"]
 radius = 6.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qlg0r"]
+size = Vector2(13, 8)
+
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_2w1fj")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 z_index = 4
-position = Vector2(0, -8)
 sprite_frames = SubResource("SpriteFrames_k5roa")
 animation = &"WallClimb"
 autoplay = "Idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -5)
 shape = SubResource("CircleShape2D_dueuf")
 
 [node name="RayCast_DownRight" type="RayCast2D" parent="."]
@@ -104,3 +106,19 @@ target_position = Vector2(-7, -13)
 
 [node name="RayCast_UpRight" type="RayCast2D" parent="."]
 target_position = Vector2(7, -13)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -12)
+zoom = Vector2(4, 4)
+script = ExtResource("4_dqkch")
+
+[node name="PickupDetector" type="Area2D" parent="."]
+collision_mask = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector"]
+position = Vector2(-1, -5)
+shape = SubResource("RectangleShape2D_qlg0r")
+
+[node name="HoldPoint" type="Marker2D" parent="."]
+position = Vector2(-1, -2)
+gizmo_extents = 1.5
