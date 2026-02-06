@@ -61,7 +61,7 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dueuf"]
-radius = 6.0
+radius = 5.8309517
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qlg0r"]
 size = Vector2(13, 8)
@@ -76,6 +76,7 @@ animation = &"WallClimb"
 autoplay = "Idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-1, 0)
 shape = SubResource("CircleShape2D_dueuf")
 
 [node name="RayCast_DownRight" type="RayCast2D" parent="."]
@@ -120,5 +121,5 @@ position = Vector2(-1, -5)
 shape = SubResource("RectangleShape2D_qlg0r")
 
 [node name="HoldPoint" type="Marker2D" parent="."]
-position = Vector2(-1, -2)
+position = Vector2(-2, -7)
 gizmo_extents = 1.5

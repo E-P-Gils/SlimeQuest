@@ -14,21 +14,50 @@ var state = STATES.WALK
 var carried_block: Node2D = null
 var facing_dir: int = 1
 
+
 func _physics_process(delta: float) -> void:
+	# Interact (pick up / drop)
 	if Input.is_action_just_pressed("interact"):
 		if carried_block:
 			drop_block()
 		else:
 			try_pickup_block()
 
-	# movement/state
+	# Movement/state
 	if state == STATES.WALK:
 		walk_state(delta)
 	else:
 		wall_state(delta)
 
 	move_and_slide()
-	# NOTE: no more “glue” code needed when parented to HoldPoint
+
+	# Animation selection (single source of truth)
+	update_animation()
+
+
+func update_animation() -> void:
+	# Wall state always uses WallClimb
+	if state == STATES.WALL:
+		if animated_sprite.animation != "WallClimb":
+			animated_sprite.play("WallClimb")
+		return
+
+	# WALK state:
+	# If carrying and on floor, use WallClimb as "carrying" anim
+	if carried_block and is_on_floor():
+		if animated_sprite.animation != "WallClimb":
+			animated_sprite.play("WallClimb")
+		return
+
+	# If jumping / falling you can keep WallClimb or add a dedicated air anim later
+	if not is_on_floor():
+		if animated_sprite.animation != "WallClimb":
+			animated_sprite.play("WallClimb")
+		return
+
+	# Default idle
+	if animated_sprite.animation != "Idle":
+		animated_sprite.play("Idle")
 
 
 func try_pickup_block() -> void:
@@ -49,7 +78,7 @@ func pick_up(block: Node2D) -> void:
 	# Parent it to HoldPoint so it inherits the marker transform
 	carried_block.reparent(hold_point, true)
 
-	# Force it to sit exactly on HoldPoint (local space)
+	# Sit exactly on HoldPoint (local space)
 	carried_block.position = Vector2.ZERO
 
 
@@ -65,22 +94,21 @@ func drop_block() -> void:
 
 	block.set_carried(false)
 
+
 func walk_state(delta: float) -> void:
-	# Only allow transition to wall state when near a wall and pressing "ui_up"
+	# Transition to wall state
 	if is_on_wall() and Input.is_action_just_pressed("ui_up"):
 		state = STATES.WALL
-		wall_state(delta)
 		return
 
 	if not is_on_floor():
 		velocity.y += GRAVITY * delta
 
-	# Jump if the "ui_up" action is pressed and character is on the floor
+	# Jump
 	if Input.is_action_just_pressed("ui_up") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
-		animated_sprite.play("WallClimb")
 
-	# Handle horizontal movement based on left/right inputs
+	# Horizontal movement
 	var direction := Input.get_axis("ui_left", "ui_right")
 	if direction != 0:
 		facing_dir = sign(direction)
@@ -88,34 +116,27 @@ func walk_state(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
-	# Return to normal state when on the floor
-	if is_on_floor():
-		animated_sprite.play("Idle")
-
 
 func wall_state(delta: float) -> void:
-	# Transition back to walk state if not on a wall
+	# Transition back to walk state
 	if not is_on_wall():
 		state = STATES.WALK
-		animated_sprite.play("Idle")
 		return
 
 	velocity = Vector2.ZERO
 
-	# Handle jump when pressing "ui_up"
+	# Jump off wall
 	if Input.is_action_just_pressed("ui_up"):
 		velocity.y = JUMP_VELOCITY
 		state = STATES.WALK
-		animated_sprite.play("WallClimb")
 		return
 
-	# Handle left/right boost jumps from wall
+	# Boost left/right off wall
 	if Input.is_action_just_pressed("ui_left"):
 		facing_dir = -1
 		velocity.x = -SPEED * 1.5
 		velocity.y = JUMP_VELOCITY
 		state = STATES.WALK
-		animated_sprite.play("WallClimb")
 		return
 
 	if Input.is_action_just_pressed("ui_right"):
@@ -123,5 +144,5 @@ func wall_state(delta: float) -> void:
 		velocity.x = SPEED * 1.5
 		velocity.y = JUMP_VELOCITY
 		state = STATES.WALK
-		animated_sprite.play("WallClimb")
+		return
 		return
