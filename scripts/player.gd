@@ -13,6 +13,10 @@ var state = STATES.WALK
 
 var carried_block: Node2D = null
 var facing_dir: int = 1
+const DROP_FORWARD_OFFSET := 16.0
+const DROP_MAX_GROUND_SNAP_DISTANCE := 6.0
+const DROP_GROUND_SEARCH_DISTANCE := 160.0
+const BLOCK_HALF_EXTENTS := Vector2(7.0, 5.5)
 
 
 func _physics_process(delta: float) -> void:
@@ -84,15 +88,53 @@ func pick_up(block: Node2D) -> void:
 
 func drop_block() -> void:
 	var block := carried_block
+	var drop_origin := global_position + Vector2(DROP_FORWARD_OFFSET * facing_dir, 0)
+	if _is_wall_adjacent_drop(drop_origin):
+		return
+
 	carried_block = null
 
 	# Put it back in the level
 	block.reparent(get_parent(), true)
-
-	# Drop in front of player (use facing_dir even if no input)
-	block.global_position = global_position + Vector2(16 * facing_dir, 0)
-
+	block.global_position = drop_origin
 	block.set_carried(false)
+
+	var ground_hit := _find_ground_below(drop_origin)
+	if not ground_hit.is_empty():
+		var hit_position: Vector2 = ground_hit["position"]
+		var support_distance := hit_position.y - (drop_origin.y + BLOCK_HALF_EXTENTS.y)
+		if support_distance <= DROP_MAX_GROUND_SNAP_DISTANCE:
+			block.global_position.y = hit_position.y - BLOCK_HALF_EXTENTS.y
+
+
+func _is_wall_adjacent_drop(drop_origin: Vector2) -> bool:
+	var space_state := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.new()
+	query.exclude = [self]
+
+	var mid_y := drop_origin.y - 1.0
+	var side_distance := BLOCK_HALF_EXTENTS.x + 2.0
+
+	query.from = Vector2(drop_origin.x, mid_y)
+	query.to = Vector2(drop_origin.x - side_distance, mid_y)
+	if not space_state.intersect_ray(query).is_empty():
+		return true
+
+	query.from = Vector2(drop_origin.x, mid_y)
+	query.to = Vector2(drop_origin.x + side_distance, mid_y)
+	if not space_state.intersect_ray(query).is_empty():
+		return true
+
+	return false
+
+
+func _find_ground_below(drop_origin: Vector2) -> Dictionary:
+	var space_state := get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.new()
+	query.exclude = [self]
+	query.from = Vector2(drop_origin.x, drop_origin.y + BLOCK_HALF_EXTENTS.y)
+	query.to = query.from + Vector2(0, DROP_GROUND_SEARCH_DISTANCE)
+	return space_state.intersect_ray(query)
 
 
 func walk_state(delta: float) -> void:

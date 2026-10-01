@@ -1,9 +1,10 @@
-[gd_scene load_steps=14 format=3 uid="uid://dlbeyd1o0yw14"]
+[gd_scene format=3 uid="uid://dlbeyd1o0yw14"]
 
 [ext_resource type="Script" uid="uid://bqgn8gmko0jxw" path="res://scripts/player.gd" id="1_2w1fj"]
-[ext_resource type="Texture2D" uid="uid://ke2m4urdkb0m" path="res://assets/sprites/SlimeHero.png" id="2_xgum4"]
-[ext_resource type="Texture2D" uid="uid://dn1xe3wchksqv" path="res://assets/sprites/SlimeClimbing.png" id="3_wdqmg"]
+[ext_resource type="Texture2D" uid="uid://ke2m4urdkb0m" path="res://assets/sprites/Finished Sprites/Snott - Slime Protagonist/Platformer/SlimeHero.png" id="2_xgum4"]
+[ext_resource type="Texture2D" uid="uid://dn1xe3wchksqv" path="res://assets/sprites/Finished Sprites/Snott - Slime Protagonist/Platformer/SlimeClimbing.png" id="3_wdqmg"]
 [ext_resource type="Script" uid="uid://7d256ebb8qu7" path="res://scenes/camera_2d.gd" id="4_dqkch"]
+[ext_resource type="Texture2D" uid="uid://borm77f64kfnr" path="res://assets/sprites/Finished Sprites/Snott - Slime Protagonist/Platformer/SlimeClimbing - Copy.png" id="4_qlg0r"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_d04qb"]
 atlas = ExtResource("2_xgum4")
@@ -29,6 +30,14 @@ region = Rect2(0, 0, 24, 21)
 atlas = ExtResource("3_wdqmg")
 region = Rect2(24, 0, 24, 21)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_tuyoq"]
+atlas = ExtResource("4_qlg0r")
+region = Rect2(24, 0, 24, 21)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fjrip"]
+atlas = ExtResource("4_qlg0r")
+region = Rect2(0, 0, 24, 21)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_k5roa"]
 animations = [{
 "frames": [{
@@ -44,7 +53,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_1ceiu")
 }],
-"loop": true,
+"loop": 1,
 "name": &"Idle",
 "speed": 5.0
 }, {
@@ -55,9 +64,25 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6twny")
 }],
-"loop": true,
+"loop": 1,
 "name": &"WallClimb",
 "speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tuyoq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fjrip")
+}],
+"loop": 1,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": 1,
+"name": &"new_animation",
+"speed": 5.0
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_dueuf"]
@@ -66,60 +91,60 @@ radius = 5.8309517
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qlg0r"]
 size = Vector2(13, 8)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" unique_id=989540082 groups=["player"]]
 script = ExtResource("1_2w1fj")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=553378633]
 z_index = 4
 sprite_frames = SubResource("SpriteFrames_k5roa")
-animation = &"WallClimb"
+animation = &"hurt"
 autoplay = "Idle"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1714259353]
 position = Vector2(-1, 0)
 shape = SubResource("CircleShape2D_dueuf")
 
-[node name="RayCast_DownRight" type="RayCast2D" parent="."]
+[node name="RayCast_DownRight" type="RayCast2D" parent="." unique_id=650559780]
 position = Vector2(3, -3)
 target_position = Vector2(5, 6)
 
-[node name="RayCast_DownLeft" type="RayCast2D" parent="."]
+[node name="RayCast_DownLeft" type="RayCast2D" parent="." unique_id=1534999441]
 position = Vector2(-3, -3)
 target_position = Vector2(-5, 5)
 
-[node name="RayCast_Down" type="RayCast2D" parent="."]
+[node name="RayCast_Down" type="RayCast2D" parent="." unique_id=1433316689]
 position = Vector2(0, -7)
 target_position = Vector2(0, 12)
 
-[node name="RayCast_Left" type="RayCast2D" parent="."]
+[node name="RayCast_Left" type="RayCast2D" parent="." unique_id=1032292950]
 position = Vector2(4, -5)
 target_position = Vector2(-15, 0)
 
-[node name="RayCast_Right" type="RayCast2D" parent="."]
+[node name="RayCast_Right" type="RayCast2D" parent="." unique_id=955074083]
 position = Vector2(-1, -5)
 target_position = Vector2(12, 0)
 
-[node name="RayCast_Up" type="RayCast2D" parent="."]
+[node name="RayCast_Up" type="RayCast2D" parent="." unique_id=742101301]
 target_position = Vector2(0, -15)
 
-[node name="RayCast_UpLeft" type="RayCast2D" parent="."]
+[node name="RayCast_UpLeft" type="RayCast2D" parent="." unique_id=1481561902]
 target_position = Vector2(-7, -13)
 
-[node name="RayCast_UpRight" type="RayCast2D" parent="."]
+[node name="RayCast_UpRight" type="RayCast2D" parent="." unique_id=682729878]
 target_position = Vector2(7, -13)
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=741946457]
 position = Vector2(0, -12)
 zoom = Vector2(4, 4)
 script = ExtResource("4_dqkch")
 
-[node name="PickupDetector" type="Area2D" parent="."]
+[node name="PickupDetector" type="Area2D" parent="." unique_id=1781042838]
 collision_mask = 3
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector" unique_id=1885834355]
 position = Vector2(-1, -5)
 shape = SubResource("RectangleShape2D_qlg0r")
 
-[node name="HoldPoint" type="Marker2D" parent="."]
+[node name="HoldPoint" type="Marker2D" parent="." unique_id=67932436]
 position = Vector2(-2, -7)
 gizmo_extents = 1.5

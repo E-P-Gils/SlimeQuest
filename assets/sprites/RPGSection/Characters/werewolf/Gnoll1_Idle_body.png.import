@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://borm77f64kfnr"
-path="res://.godot/imported/SlimeClimbing - Copy.png-53ef53733b2e58f99351115f354aeb6f.ctex"
+uid="uid://cg2v67em7ygp5"
+path="res://.godot/imported/Gnoll1_Idle_body.png-29ee2a04464b1fbad68ca6594664fc64.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/SlimeClimbing - Copy.png"
-dest_files=["res://.godot/imported/SlimeClimbing - Copy.png-53ef53733b2e58f99351115f354aeb6f.ctex"]
+source_file="res://assets/sprites/RPGSection/Characters/werewolf/Gnoll1_Idle_body.png"
+dest_files=["res://.godot/imported/Gnoll1_Idle_body.png-29ee2a04464b1fbad68ca6594664fc64.ctex"]
 
 [params]
 

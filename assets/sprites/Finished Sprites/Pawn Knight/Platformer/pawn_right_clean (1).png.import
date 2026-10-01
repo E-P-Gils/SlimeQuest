@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6wxl0vmrpgmj"
-path="res://.godot/imported/SlimeHero - Copy.png-9d7d3ffaac2e392772824d519f712cd4.ctex"
+uid="uid://25ry8qlaoqa4"
+path="res://.godot/imported/pawn_right_clean (1).png-11953024270639bf12d02554cd9b26ff.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/SlimeHero - Copy.png"
-dest_files=["res://.godot/imported/SlimeHero - Copy.png-9d7d3ffaac2e392772824d519f712cd4.ctex"]
+source_file="res://assets/sprites/Finished Sprites/Pawn Knight/Platformer/pawn_right_clean (1).png"
+dest_files=["res://.godot/imported/pawn_right_clean (1).png-11953024270639bf12d02554cd9b26ff.ctex"]
 
 [params]
 

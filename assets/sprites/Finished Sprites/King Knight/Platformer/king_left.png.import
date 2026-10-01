@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dn1xe3wchksqv"
-path="res://.godot/imported/SlimeClimbing.png-3678b7eb05e21fa37f4bcbb2367a5d2c.ctex"
+uid="uid://bd6enb0gy6ee6"
+path="res://.godot/imported/king_left.png-dc1117c575a0b0186596423d9751071a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/SlimeClimbing.png"
-dest_files=["res://.godot/imported/SlimeClimbing.png-3678b7eb05e21fa37f4bcbb2367a5d2c.ctex"]
+source_file="res://assets/sprites/Finished Sprites/King Knight/Platformer/king_left.png"
+dest_files=["res://.godot/imported/king_left.png-dc1117c575a0b0186596423d9751071a.ctex"]
 
 [params]
 

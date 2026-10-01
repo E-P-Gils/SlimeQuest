@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ke2m4urdkb0m"
-path="res://.godot/imported/SlimeHero.png-4e4159e3f403cec36c2376759953298b.ctex"
+uid="uid://binq1whmh6xtm"
+path="res://.godot/imported/Gnoll1_Idle_shadow.png-ffc096fcbabc51a50e9d5e1b8a612664.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/SlimeHero.png"
-dest_files=["res://.godot/imported/SlimeHero.png-4e4159e3f403cec36c2376759953298b.ctex"]
+source_file="res://assets/sprites/RPGSection/Characters/werewolf/Gnoll1_Idle_shadow.png"
+dest_files=["res://.godot/imported/Gnoll1_Idle_shadow.png-ffc096fcbabc51a50e9d5e1b8a612664.ctex"]
 
 [params]
 
