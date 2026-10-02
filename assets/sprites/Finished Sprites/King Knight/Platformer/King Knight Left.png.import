@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bd6enb0gy6ee6"
-path="res://.godot/imported/king_left.png-dc1117c575a0b0186596423d9751071a.ctex"
+uid="uid://bv2mynfkj2psy"
+path="res://.godot/imported/King Knight Left.png-4e9e039c7fc4bb125243525650f109cb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/Finished Sprites/King Knight/Platformer/king_left.png"
-dest_files=["res://.godot/imported/king_left.png-dc1117c575a0b0186596423d9751071a.ctex"]
+source_file="res://assets/sprites/Finished Sprites/King Knight/Platformer/King Knight Left.png"
+dest_files=["res://.godot/imported/King Knight Left.png-4e9e039c7fc4bb125243525650f109cb.ctex"]
 
 [params]
 

@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://dnbfpyx1ctwwr" path="res://scenes/actionrock.gd" id="7_gee14"]
 [ext_resource type="PackedScene" uid="uid://coy6aan2ro8j5" path="res://pawn_knight.tscn" id="7_u5sy4"]
 [ext_resource type="PackedScene" uid="uid://b81df2ykj46mo" path="res://rook_knight.tscn" id="8_gee14"]
+[ext_resource type="PackedScene" uid="uid://dln3aa147ueot" path="res://king_knight.tscn" id="9_0tnpc"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tun8l"]
 texture = ExtResource("2_k3u6b")
@@ -285,3 +286,6 @@ script = null
 
 [node name="rook_knight" parent="." unique_id=587903913 instance=ExtResource("8_gee14")]
 position = Vector2(1019, 1267)
+
+[node name="king_knight" parent="." unique_id=1532283997 instance=ExtResource("9_0tnpc")]
+position = Vector2(-905, 821)
