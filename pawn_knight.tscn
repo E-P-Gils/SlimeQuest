@@ -224,7 +224,7 @@ script = ExtResource("3_knight")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=343762586]
 scale = Vector2(0.12, 0.12)
 sprite_frames = SubResource("SpriteFrames_bxiyo")
-animation = &"idle_right"
+animation = &"walk_left"
 autoplay = "idle_left"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1958141919]
@@ -240,3 +240,6 @@ monitoring = false
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1661489224]
 position = Vector2(1, 4)
 shape = SubResource("RectangleShape2D_2ysll")
+
+[node name="RayCast2D2" type="RayCast2D" parent="." unique_id=1783914087]
+target_position = Vector2(8, 13)

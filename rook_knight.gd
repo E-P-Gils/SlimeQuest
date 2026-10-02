@@ -1,6 +1,5 @@
 extends CharacterBody2D
 
-
 enum States { IDLE, WALK, ATTACK }
 enum Phase { WINDUP, CHARGE, RECOVER }
 
