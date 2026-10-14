@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://c3dcp0vo7nb7a"]
+
+[ext_resource type="Texture2D" uid="uid://grcxobi1eykm" path="res://assets/sprites/blocks/blue_block_transparent.png" id="1_bem5f"]
+[ext_resource type="Script" uid="uid://ku5mb4jwo48m" path="res://mirrorblock.gd" id="1_uv4uc"]
+[ext_resource type="Script" uid="uid://ba2xxwdufrfut" path="res://collision_shape_2d.gd" id="3_eurnb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rajyp"]
+atlas = ExtResource("1_bem5f")
+region = Rect2(0, 0, 734, 779)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bxiyo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rajyp")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bxiyo"]
+size = Vector2(14, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p4kkq"]
+size = Vector2(14, 16)
+
+[node name="mirrorblock" type="RigidBody2D" unique_id=1289856564]
+script = ExtResource("1_uv4uc")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=67676837]
+scale = Vector2(0.02, 0.02)
+sprite_frames = SubResource("SpriteFrames_bxiyo")
+animation = &"idle"
+
+[node name="pickup" type="Area2D" parent="." unique_id=1501424877]
+collision_layer = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="pickup" unique_id=967155699]
+shape = SubResource("RectangleShape2D_bxiyo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=970215412]
+shape = SubResource("RectangleShape2D_p4kkq")
+script = ExtResource("3_eurnb")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=690133300]
+position = Vector2(0, 7)
+target_position = Vector2(0, 1)

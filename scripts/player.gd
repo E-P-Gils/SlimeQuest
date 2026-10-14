@@ -3,12 +3,23 @@ extends CharacterBody2D
 const SPEED = 100.0
 const JUMP_VELOCITY = -50.0
 const GRAVITY = 200
+const MAX_HEALTH := 3
+const HURT_LOCK := 0.35
+const INVINCIBLE_TIME := 1.0
+const CONTACT_KNOCKBACK := Vector2(120.0, -60.0)
+
+signal health_changed(current: int, maximum: int)
 
 enum STATES { WALK, WALL }
 var state = STATES.WALK
+var health := MAX_HEALTH
+var hurt_lock := 0.0
+var invincible := 0.0
+var dying := false
 
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var pickup_detector: Area2D = $PickupDetector
+@onready var hurt_detector: Area2D = $HurtDetector
 @onready var hold_point: Marker2D = $HoldPoint
 
 var carried_block: Node2D = null
@@ -19,27 +30,92 @@ const DROP_GROUND_SEARCH_DISTANCE := 160.0
 const BLOCK_HALF_EXTENTS := Vector2(7.0, 5.5)
 
 
+func _ready() -> void:
+	health_changed.emit(health, MAX_HEALTH)
+
+
+func take_hit(knock_dir: float, knockback: Vector2, damage: int = 1) -> void:
+	if dying:
+		return
+	if damage <= 1 and invincible > 0.0:
+		return
+
+	health = maxi(0, health - damage)
+	health_changed.emit(health, MAX_HEALTH)
+	invincible = INVINCIBLE_TIME
+	hurt_lock = HURT_LOCK
+	state = STATES.WALK
+	velocity = Vector2(knock_dir * knockback.x, knockback.y)
+	animated_sprite.play("hurt")
+	animated_sprite.modulate = Color(1.0, 0.55, 0.55)
+
+	if health <= 0:
+		dying = true
+		get_tree().create_timer(0.85).timeout.connect(_restart_scene)
+
+
+func _restart_scene() -> void:
+	get_tree().reload_current_scene()
+
+
+func _check_enemy_contact() -> void:
+	if invincible > 0.0 or dying:
+		return
+	for body in hurt_detector.get_overlapping_bodies():
+		if body == self:
+			continue
+		if body is Node and (body as Node).is_in_group("enemies"):
+			var knock_dir := signf(global_position.x - body.global_position.x)
+			if knock_dir == 0.0:
+				knock_dir = float(-facing_dir)
+			take_hit(knock_dir, CONTACT_KNOCKBACK)
+			return
+
+
 func _physics_process(delta: float) -> void:
+	hurt_lock = maxf(0.0, hurt_lock - delta)
+	invincible = maxf(0.0, invincible - delta)
+	if invincible <= 0.0:
+		animated_sprite.modulate = Color.WHITE
+	elif int(invincible * 12.0) % 2 == 0:
+		animated_sprite.modulate = Color(1.0, 0.55, 0.55)
+	else:
+		animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.55)
+
 	# Interact (pick up / drop)
-	if Input.is_action_just_pressed("interact"):
+	if not dying and Input.is_action_just_pressed("interact"):
 		if carried_block:
 			drop_block()
 		else:
 			try_pickup_block()
 
 	# Movement/state
-	if state == STATES.WALK:
+	if dying:
+		if not is_on_floor():
+			velocity.y += GRAVITY * delta
+		velocity.x = move_toward(velocity.x, 0, SPEED * 0.5)
+	elif hurt_lock > 0.0:
+		if not is_on_floor():
+			velocity.y += GRAVITY * delta
+	elif state == STATES.WALK:
 		walk_state(delta)
 	else:
 		wall_state(delta)
 
 	move_and_slide()
+	_keep_carried_block()
+	_check_enemy_contact()
 
 	# Animation selection (single source of truth)
 	update_animation()
 
 
 func update_animation() -> void:
+	if hurt_lock > 0.0 or dying:
+		if animated_sprite.animation != "hurt":
+			animated_sprite.play("hurt")
+		return
+
 	# Wall state always uses WallClimb
 	if state == STATES.WALL:
 		if animated_sprite.animation != "WallClimb":
@@ -64,13 +140,27 @@ func update_animation() -> void:
 		animated_sprite.play("Idle")
 
 
+func _keep_carried_block() -> void:
+	if carried_block == null or not is_instance_valid(carried_block):
+		return
+	carried_block.position = Vector2.ZERO
+	carried_block.rotation = 0.0
+	if carried_block is RigidBody2D:
+		var body := carried_block as RigidBody2D
+		body.freeze = true
+		body.linear_velocity = Vector2.ZERO
+		body.angular_velocity = 0.0
+		body.sleeping = true
+
+
 func try_pickup_block() -> void:
+	pickup_detector.monitoring = true
 	for area in pickup_detector.get_overlapping_areas():
 		var n: Node = area
 		while n and not n.has_method("set_carried"):
 			n = n.get_parent()
 
-		if n and not n.carried:
+		if n and n.get("carried") == false:
 			pick_up(n as Node2D)
 			return
 
@@ -79,11 +169,11 @@ func pick_up(block: Node2D) -> void:
 	carried_block = block
 	carried_block.set_carried(true)
 
-	# Parent it to HoldPoint so it inherits the marker transform
+	# Parent it to HoldPoint so it follows walk, jump, and wall climb.
 	carried_block.reparent(hold_point, true)
-
-	# Sit exactly on HoldPoint (local space)
 	carried_block.position = Vector2.ZERO
+	carried_block.rotation = 0.0
+	_keep_carried_block()
 
 
 func drop_block() -> void:
@@ -139,7 +229,7 @@ func _find_ground_below(drop_origin: Vector2) -> Dictionary:
 
 func walk_state(delta: float) -> void:
 	# Transition to wall state
-	if is_on_wall() and Input.is_action_just_pressed("ui_up"):
+	if is_on_wall() and Input.is_action_just_pressed("ui_up") and not _wall_is_enemy():
 		state = STATES.WALL
 		return
 
@@ -159,9 +249,20 @@ func walk_state(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 
 
+func _wall_is_enemy() -> bool:
+	for i in get_slide_collision_count():
+		var col := get_slide_collision(i)
+		if absf(col.get_normal().x) < 0.6:
+			continue
+		var collider := col.get_collider()
+		if collider is Node and (collider as Node).is_in_group("enemies"):
+			return true
+	return false
+
+
 func wall_state(delta: float) -> void:
 	# Transition back to walk state
-	if not is_on_wall():
+	if not is_on_wall() or _wall_is_enemy():
 		state = STATES.WALK
 		return
 

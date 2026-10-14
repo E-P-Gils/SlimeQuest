@@ -52,6 +52,14 @@ region = Rect2(510, 204, 170, 204)
 atlas = ExtResource("2_6p2gs")
 region = Rect2(680, 204, 170, 204)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_ryxty"]
+atlas = ExtResource("2_6p2gs")
+region = Rect2(0, 388, 192, 194)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_srdcb"]
+atlas = ExtResource("1_eln6t")
+region = Rect2(0, 388, 192, 194)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_7sjeu"]
 atlas = ExtResource("1_eln6t")
 region = Rect2(925, 405, 185, 135)
@@ -136,6 +144,22 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_ryxty")
+}],
+"loop": 1,
+"name": &"sent_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_srdcb")
+}],
+"loop": 1,
+"name": &"sent_right",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_7sjeu")
 }, {
 "duration": 1.0,
@@ -170,12 +194,14 @@ size = Vector2(19, 32)
 size = Vector2(26, 34)
 
 [node name="rook_knight" type="CharacterBody2D" unique_id=587903913]
+collision_layer = 4
+collision_mask = 1
 script = ExtResource("1_6p2gs")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=159476448]
 scale = Vector2(0.25, 0.25)
 sprite_frames = SubResource("SpriteFrames_bxiyo")
-animation = &"attack_right"
+animation = &"sent_right"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=319012697]
 position = Vector2(-3, -1)

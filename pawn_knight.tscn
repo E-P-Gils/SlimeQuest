@@ -36,6 +36,14 @@ region = Rect2(0, 0, 256, 256)
 atlas = ExtResource("2_2ysll")
 region = Rect2(256, 0, 256, 256)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_2ysll"]
+atlas = ExtResource("2_2ysll")
+region = Rect2(1024, 269, 256, 269)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_oti1n"]
+atlas = ExtResource("1_76etw")
+region = Rect2(1024, 269, 256, 269)
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_2tjf6"]
 atlas = ExtResource("1_76etw")
 region = Rect2(512, 0, 256, 256)
@@ -152,6 +160,22 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_2ysll")
+}],
+"loop": 1,
+"name": &"sent_left",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_oti1n")
+}],
+"loop": 1,
+"name": &"sent_right",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_2tjf6")
 }, {
 "duration": 1.0,
@@ -219,12 +243,14 @@ size = Vector2(13, 20)
 size = Vector2(18, 20)
 
 [node name="PawnKnight" type="CharacterBody2D" unique_id=625562366]
+collision_layer = 4
+collision_mask = 1
 script = ExtResource("3_knight")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=343762586]
 scale = Vector2(0.12, 0.12)
 sprite_frames = SubResource("SpriteFrames_bxiyo")
-animation = &"walk_left"
+animation = &"sent_right"
 autoplay = "idle_left"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1958141919]

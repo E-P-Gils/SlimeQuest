@@ -89,7 +89,10 @@ animations = [{
 radius = 5.8309517
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qlg0r"]
-size = Vector2(13, 8)
+size = Vector2(32, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurt"]
+radius = 7.5
 
 [node name="Player" type="CharacterBody2D" unique_id=989540082 groups=["player"]]
 script = ExtResource("1_2w1fj")
@@ -138,11 +141,20 @@ position = Vector2(0, -12)
 zoom = Vector2(4, 4)
 script = ExtResource("4_dqkch")
 
+[node name="HurtDetector" type="Area2D" parent="." unique_id=1781042839]
+collision_layer = 0
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtDetector" unique_id=1885834356]
+position = Vector2(-1, 0)
+shape = SubResource("CircleShape2D_hurt")
+
 [node name="PickupDetector" type="Area2D" parent="." unique_id=1781042838]
 collision_mask = 3
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PickupDetector" unique_id=1885834355]
-position = Vector2(-1, -5)
+position = Vector2(-1, 0)
 shape = SubResource("RectangleShape2D_qlg0r")
 
 [node name="HoldPoint" type="Marker2D" parent="." unique_id=67932436]

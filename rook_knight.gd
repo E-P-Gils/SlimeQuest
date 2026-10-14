@@ -1,6 +1,8 @@
 extends CharacterBody2D
 
-enum States { IDLE, WALK, ATTACK }
+const Mood := preload("res://scripts/combat_mood.gd")
+
+enum States { IDLE, WALK, ATTACK, WATCH, REPOSITION }
 enum Phase { WINDUP, CHARGE, RECOVER }
 
 const GRAVITY := 200.0
@@ -13,12 +15,12 @@ const GRAVITY := 200.0
 @export var idle_time_max := 2.6
 @export var sight_range := 140.0
 @export var sight_lost_time := 1.6
-@export var attack_cooldown := 1.5
+@export var attack_cooldown := 1.7
 @export var attack_knockback := Vector2(160.0, -80.0)
 @export var charge_trigger_range := 120.0   # starts the attack from this far away
 @export var windup_time := 0.5              # pause in idle stance before sliding
-@export var charge_speed := 260.0
-@export var recover_time := 0.9
+@export var charge_speed := 150.0
+@export var recover_time := 0.7
 @export var slide_hold_frame := 4           # attack frame to freeze on while sliding
 @export var look_ahead := 10.0
 @export var level_tolerance := 4.0
@@ -40,11 +42,18 @@ var attack_ready_in := 0.0
 var chase_target: Node2D
 var did_hit_this_attack := false
 var blocked_dir := 0
+var hesitate := 0.0
+var watch_timer := 0.0
+var had_target := false
 
 
 func _ready() -> void:
 	patrol_target_x = global_position.x
 	add_to_group("enemies")
+	collision_layer = 4
+	collision_mask = 1
+	add_child(preload("res://scripts/enemy_blast.gd").new(1))
+	add_child(preload("res://scripts/enemy_status.gd").new())
 
 	var frames := animated_sprite.sprite_frames
 	if frames:
@@ -65,6 +74,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y += GRAVITY * delta
 
 	attack_ready_in = maxf(0.0, attack_ready_in - delta)
+	hesitate = maxf(0.0, hesitate - delta)
 	_update_sight(delta)
 
 	# Keep the hitbox on the side the knight faces (place the Area2D at a POSITIVE x offset)
@@ -77,6 +87,10 @@ func _physics_process(delta: float) -> void:
 			_walk_state()
 		States.ATTACK:
 			_attack_state(delta)
+		States.WATCH:
+			_watch_state(delta)
+		States.REPOSITION:
+			_reposition_state()
 
 	attack_hitbox.set_deferred("monitoring", state == States.ATTACK and phase == Phase.CHARGE)
 	move_and_slide()
@@ -87,10 +101,13 @@ func _physics_process(delta: float) -> void:
 
 func _idle_state(delta: float) -> void:
 	velocity.x = 0.0
-	if _can_attack_player():
-		_enter_attack()
-		return
 	if chase_target:
+		_face_target()
+		if hesitate > 0.0:
+			return
+		if _can_attack_player():
+			_enter_attack()
+			return
 		state = States.WALK
 		return
 	idle_timer -= delta
@@ -100,6 +117,10 @@ func _idle_state(delta: float) -> void:
 
 
 func _walk_state() -> void:
+	if hesitate > 0.0:
+		velocity.x = 0.0
+		_face_target()
+		return
 	if _can_attack_player():
 		_enter_attack()
 		return
@@ -168,10 +189,7 @@ func _attack_state(delta: float) -> void:
 			phase_timer -= delta
 			if phase_timer <= 0.0:
 				attack_ready_in = attack_cooldown
-				if chase_target:
-					state = States.WALK
-				else:
-					_enter_idle()
+				_enter_watch()
 
 
 func _hold_slide_pose() -> void:
@@ -200,10 +218,66 @@ func _on_attack_hitbox_body_entered(body: Node) -> void:
 
 # ---------- sight ----------
 
+func _enter_watch() -> void:
+	state = States.WATCH
+	velocity.x = 0.0
+	watch_timer = Mood.watch_time(did_hit_this_attack)
+
+
+func _watch_state(delta: float) -> void:
+	velocity.x = 0.0
+	_face_target()
+	watch_timer -= delta
+	if watch_timer > 0.0:
+		return
+	_follow_intent(Mood.after_attack(did_hit_this_attack))
+
+
+func _follow_intent(intent: int) -> void:
+	match intent:
+		Mood.Intent.PRESS:
+			if chase_target:
+				state = States.WALK
+			else:
+				_enter_idle()
+		Mood.Intent.WATCH:
+			_enter_idle()
+			idle_timer = Mood.watch_time(did_hit_this_attack)
+		Mood.Intent.RETREAT:
+			_enter_reposition(Mood.retreat_x(global_position.x, -facing_dir))
+		Mood.Intent.FLANK:
+			var px := global_position.x
+			if chase_target:
+				px = chase_target.global_position.x
+			_enter_reposition(Mood.flank_x(px, global_position.x))
+
+
+func _enter_reposition(dest_x: float) -> void:
+	state = States.REPOSITION
+	patrol_target_x = dest_x
+	attack_ready_in = maxf(attack_ready_in, 0.7)
+
+
+func _reposition_state() -> void:
+	var to_dest := patrol_target_x - global_position.x
+	if absf(to_dest) <= 5.0:
+		_enter_idle()
+		return
+	facing_dir = 1 if to_dest > 0.0 else -1
+	if _blocked_ahead():
+		blocked_dir = facing_dir
+		_enter_idle()
+		return
+	velocity.x = facing_dir * patrol_speed
+
+
 func _update_sight(delta: float) -> void:
 	var player := _find_player()
 	if player and _can_see_player(player):
+		if not had_target:
+			hesitate = Mood.hesitate_time()
 		chase_target = player
+		had_target = true
 		sight_memory = sight_lost_time
 		return
 	if sight_memory > 0.0:
@@ -239,7 +313,7 @@ func _can_see_player(player: Node2D) -> bool:
 
 
 func _can_attack_player() -> bool:
-	if attack_ready_in > 0.0 or chase_target == null:
+	if attack_ready_in > 0.0 or hesitate > 0.0 or chase_target == null:
 		return false
 	var to_player := chase_target.global_position - global_position
 	return absf(to_player.x) <= charge_trigger_range and absf(to_player.y) <= 24.0
@@ -326,7 +400,7 @@ func _play_state_animation() -> void:
 	if state == States.ATTACK:
 		if phase == Phase.CHARGE:
 			kind = "attack"
-	elif state == States.WALK and absf(velocity.x) > 1.0:
+	elif (state == States.WALK or state == States.REPOSITION) and absf(velocity.x) > 1.0:
 		kind = "walk"
 
 	var anim := _anim(kind)

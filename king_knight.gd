@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const Mood := preload("res://scripts/combat_mood.gd")
+
 enum States { IDLE, TELEPORTING, ATTACK }
 
 const GRAVITY := 200.0
@@ -10,9 +12,9 @@ const GRAVITY := 200.0
 @export var sight_lost_time := 2.0
 
 @export_group("Teleport attack")
-@export var decision_interval := 0.6    # how often it "rolls the dice" while it sees the slime
-@export var teleport_attack_chance := 0.65
-@export var attack_cooldown := 1.8
+@export var decision_interval := 0.85    # how often it "rolls the dice" while it sees the slime
+@export var teleport_attack_chance := 0.5
+@export var attack_cooldown := 1.9
 @export var behind_distance := 30.0     # how far behind the slime it appears
 @export var vanish_time := 0.18
 @export var appear_time := 0.18
@@ -50,11 +52,17 @@ var attack_ready_in := 0.0
 var roam_timer := 0.0
 var attack_fallback := -1.0
 var did_hit_this_attack := false
+var hesitate := 0.0
+var had_target := false
 
 
 func _ready() -> void:
 	home_pos = global_position
 	add_to_group("enemies")
+	collision_layer = 4
+	collision_mask = 1
+	add_child(preload("res://scripts/enemy_blast.gd").new(2))
+	add_child(preload("res://scripts/enemy_status.gd").new())
 	roam_timer = randf_range(roam_interval_min, roam_interval_max)
 
 	var frames := animated_sprite.sprite_frames
@@ -78,6 +86,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = 0.0
 
 	attack_ready_in = maxf(0.0, attack_ready_in - delta)
+	hesitate = maxf(0.0, hesitate - delta)
 	_update_sight(delta)
 
 	# Keep the hitbox on the side the king faces (place the Area2D at a POSITIVE x offset)
@@ -98,21 +107,18 @@ func _physics_process(delta: float) -> void:
 
 func _enter_idle() -> void:
 	state = States.IDLE
-	decision_timer = 0.3
+	decision_timer = randf_range(0.5, 1.1)
 
 
 func _idle_state(delta: float) -> void:
 	if chase_target:
 		_face_target()
+		if hesitate > 0.0:
+			return
 		decision_timer -= delta
 		if decision_timer <= 0.0 and attack_ready_in <= 0.0:
-			decision_timer = decision_interval
-			if _in_melee_range():
-				_enter_attack()
-			elif randf() < teleport_attack_chance:
-				var dest := _find_behind_player()
-				if dest != Vector2.INF:
-					_teleport_to(dest, true)
+			decision_timer = randf_range(decision_interval * 0.8, decision_interval * 1.6)
+			_choose_next_move()
 		return
 
 	# Only roams while it hasn't noticed the slime
@@ -145,8 +151,28 @@ func _attack_state(delta: float) -> void:
 			_enter_idle()
 
 
+func _choose_next_move() -> void:
+	var intent: int = Mood.after_attack(did_hit_this_attack)
+	if _in_melee_range() and intent == Mood.Intent.PRESS:
+		_enter_attack()
+		return
+	if intent == Mood.Intent.RETREAT:
+		_roam()
+		attack_ready_in = maxf(attack_ready_in, Mood.watch_time(true))
+		return
+	if intent == Mood.Intent.FLANK or randf() < teleport_attack_chance:
+		var dest := _find_behind_player()
+		if dest != Vector2.INF:
+			_teleport_to(dest, intent == Mood.Intent.PRESS)
+			return
+	if _in_melee_range() and randf() < 0.35:
+		_enter_attack()
+
+
 func _on_animation_finished() -> void:
 	if state == States.ATTACK:
+		attack_ready_in = maxf(attack_ready_in, Mood.watch_time(did_hit_this_attack))
+		decision_timer = Mood.watch_time(did_hit_this_attack)
 		_enter_idle()
 
 
@@ -322,7 +348,11 @@ func _feet_offset() -> float:
 func _update_sight(delta: float) -> void:
 	var player := _find_player()
 	if player and _can_see_player(player):
+		if not had_target:
+			hesitate = Mood.hesitate_time()
+			decision_timer = hesitate
 		chase_target = player
+		had_target = true
 		sight_memory = sight_lost_time
 		return
 	if sight_memory > 0.0:

@@ -1,14 +1,14 @@
 extends CharacterBody2D
 
+const Mood := preload("res://scripts/combat_mood.gd")
 
-enum States { IDLE, WALK, ATTACK }
-enum Phase { WINDUP, CHARGE, RECOVER }
+
+enum States { IDLE, WALK, ATTACK, WATCH, REPOSITION }
 
 const GRAVITY := 200.0
 
-# Speeds are the pawn's divided by 1.5, so the pawn is 50% faster.
-@export var patrol_speed := 27.0
-@export var chase_speed := 47.0
+@export var patrol_speed := 32.0
+@export var chase_speed := 42.0
 @export var patrol_radius := 80.0
 @export var idle_time_min := 1.2
 @export var idle_time_max := 2.6
@@ -16,11 +16,9 @@ const GRAVITY := 200.0
 @export var sight_lost_time := 1.6
 @export var attack_cooldown := 1.5
 @export var attack_knockback := Vector2(160.0, -80.0)
-@export var charge_trigger_range := 120.0   # starts the attack from this far away
-@export var windup_time := 0.5              # pause in idle stance before sliding
-@export var charge_speed := 260.0
-@export var recover_time := 0.9
-@export var slide_hold_frame := 4           # attack frame to freeze on while sliding
+@export var attack_range := 22.0
+@export var hit_frame_start := 0
+@export var hit_frame_end := 1
 @export var look_ahead := 10.0
 @export var level_tolerance := 4.0
 @export var chase_drop_limit := 48.0
@@ -31,8 +29,6 @@ const GRAVITY := 200.0
 @onready var attack_hitbox: Area2D = $Area2D
 
 var state: States = States.IDLE
-var phase: Phase = Phase.WINDUP
-var phase_timer := 0.0
 var facing_dir: int = -1
 var patrol_target_x: float
 var idle_timer := 0.0
@@ -41,11 +37,18 @@ var attack_ready_in := 0.0
 var chase_target: Node2D
 var did_hit_this_attack := false
 var blocked_dir := 0
+var hesitate := 0.0
+var watch_timer := 0.0
+var had_target := false
 
 
 func _ready() -> void:
 	patrol_target_x = global_position.x
 	add_to_group("enemies")
+	collision_layer = 4
+	collision_mask = 1
+	add_child(preload("res://scripts/enemy_blast.gd").new(1))
+	add_child(preload("res://scripts/enemy_status.gd").new())
 
 	var frames := animated_sprite.sprite_frames
 	if frames:
@@ -53,6 +56,7 @@ func _ready() -> void:
 			if frames.has_animation(anim):
 				frames.set_animation_loop(anim, false)
 
+	animated_sprite.animation_finished.connect(_on_animation_finished)
 	attack_hitbox.monitoring = false
 	attack_hitbox.body_entered.connect(_on_attack_hitbox_body_entered)
 
@@ -66,6 +70,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y += GRAVITY * delta
 
 	attack_ready_in = maxf(0.0, attack_ready_in - delta)
+	hesitate = maxf(0.0, hesitate - delta)
 	_update_sight(delta)
 
 	# Keep the hitbox on the side the knight faces (place the Area2D at a POSITIVE x offset)
@@ -78,8 +83,12 @@ func _physics_process(delta: float) -> void:
 			_walk_state()
 		States.ATTACK:
 			_attack_state(delta)
+		States.WATCH:
+			_watch_state(delta)
+		States.REPOSITION:
+			_reposition_state()
 
-	attack_hitbox.set_deferred("monitoring", state == States.ATTACK and phase == Phase.CHARGE)
+	attack_hitbox.set_deferred("monitoring", _hitbox_active())
 	move_and_slide()
 	_play_state_animation()
 
@@ -88,10 +97,13 @@ func _physics_process(delta: float) -> void:
 
 func _idle_state(delta: float) -> void:
 	velocity.x = 0.0
-	if _can_attack_player():
-		_enter_attack()
-		return
 	if chase_target:
+		_face_target()
+		if hesitate > 0.0:
+			return
+		if _can_attack_player():
+			_enter_attack()
+			return
 		state = States.WALK
 		return
 	idle_timer -= delta
@@ -101,6 +113,10 @@ func _idle_state(delta: float) -> void:
 
 
 func _walk_state() -> void:
+	if hesitate > 0.0:
+		velocity.x = 0.0
+		_face_target()
+		return
 	if _can_attack_player():
 		_enter_attack()
 		return
@@ -135,55 +151,89 @@ func _enter_idle() -> void:
 	idle_timer = randf_range(idle_time_min, idle_time_max)
 
 
-# ---------- rook attack: pause, then slide to the end of the ledge ----------
-
 func _enter_attack() -> void:
 	state = States.ATTACK
 	velocity.x = 0.0
 	did_hit_this_attack = false
+	attack_ready_in = attack_cooldown
 	_face_target()
-	phase = Phase.WINDUP
-	phase_timer = windup_time
+	animated_sprite.play(_anim("attack"))
 
 
-func _attack_state(delta: float) -> void:
-	match phase:
-		Phase.WINDUP:
-			velocity.x = 0.0
-			phase_timer -= delta
-			if phase_timer <= 0.0:
-				_face_target()
-				did_hit_this_attack = false
-				phase = Phase.CHARGE
-		Phase.CHARGE:
-			# strict: stop at the end of THIS ledge level, even while chasing
-			if _blocked_ahead(true) or is_on_wall():
-				velocity.x = 0.0
-				phase = Phase.RECOVER
-				phase_timer = recover_time
+func _attack_state(_delta: float) -> void:
+	velocity.x = 0.0
+
+
+func _on_animation_finished() -> void:
+	if state != States.ATTACK:
+		return
+	_enter_watch()
+
+
+func _enter_watch() -> void:
+	state = States.WATCH
+	velocity.x = 0.0
+	watch_timer = Mood.watch_time(did_hit_this_attack)
+
+
+func _watch_state(delta: float) -> void:
+	velocity.x = 0.0
+	_face_target()
+	watch_timer -= delta
+	if watch_timer > 0.0:
+		return
+	_follow_intent(Mood.after_attack(did_hit_this_attack))
+
+
+func _follow_intent(intent: int) -> void:
+	match intent:
+		Mood.Intent.PRESS:
+			if chase_target:
+				state = States.WALK
 			else:
-				velocity.x = facing_dir * charge_speed
-				_hold_slide_pose()
-		Phase.RECOVER:
-			velocity.x = 0.0
-			phase_timer -= delta
-			if phase_timer <= 0.0:
-				attack_ready_in = attack_cooldown
-				if chase_target:
-					state = States.WALK
-				else:
-					_enter_idle()
+				_enter_idle()
+		Mood.Intent.WATCH:
+			_enter_idle()
+			idle_timer = Mood.watch_time(did_hit_this_attack)
+		Mood.Intent.RETREAT:
+			_enter_reposition(Mood.retreat_x(global_position.x, -facing_dir))
+		Mood.Intent.FLANK:
+			var px := global_position.x
+			if chase_target:
+				px = chase_target.global_position.x
+			_enter_reposition(Mood.flank_x(px, global_position.x))
 
 
-func _hold_slide_pose() -> void:
-	if animated_sprite.animation == _anim("attack") \
-			and animated_sprite.is_playing() \
-			and animated_sprite.frame >= slide_hold_frame:
-		animated_sprite.pause()
+func _enter_reposition(dest_x: float) -> void:
+	state = States.REPOSITION
+	patrol_target_x = dest_x
+	attack_ready_in = maxf(attack_ready_in, 0.6)
+
+
+func _reposition_state() -> void:
+	var to_dest := patrol_target_x - global_position.x
+	if absf(to_dest) <= 5.0:
+		_enter_idle()
+		return
+	facing_dir = 1 if to_dest > 0.0 else -1
+	if _blocked_ahead():
+		blocked_dir = facing_dir
+		_enter_idle()
+		return
+	velocity.x = facing_dir * patrol_speed
+
+
+func _hitbox_active() -> bool:
+	if state != States.ATTACK:
+		return false
+	if animated_sprite.animation != _anim("attack"):
+		return false
+	var f := animated_sprite.frame
+	return f >= hit_frame_start and f <= hit_frame_end
 
 
 func _on_attack_hitbox_body_entered(body: Node) -> void:
-	if state != States.ATTACK or phase != Phase.CHARGE or did_hit_this_attack:
+	if state != States.ATTACK or did_hit_this_attack:
 		return
 	if not body.is_in_group("player"):
 		return
@@ -204,7 +254,10 @@ func _on_attack_hitbox_body_entered(body: Node) -> void:
 func _update_sight(delta: float) -> void:
 	var player := _find_player()
 	if player and _can_see_player(player):
+		if not had_target:
+			hesitate = Mood.hesitate_time()
 		chase_target = player
+		had_target = true
 		sight_memory = sight_lost_time
 		return
 	if sight_memory > 0.0:
@@ -240,10 +293,10 @@ func _can_see_player(player: Node2D) -> bool:
 
 
 func _can_attack_player() -> bool:
-	if attack_ready_in > 0.0 or chase_target == null:
+	if attack_ready_in > 0.0 or hesitate > 0.0 or chase_target == null:
 		return false
 	var to_player := chase_target.global_position - global_position
-	return absf(to_player.x) <= charge_trigger_range and absf(to_player.y) <= 24.0
+	return absf(to_player.x) <= attack_range and absf(to_player.y) <= 24.0
 
 
 func _face_target() -> void:
@@ -283,9 +336,13 @@ func _blocked_ahead(strict := false) -> bool:
 
 
 func _is_step_up_ahead() -> bool:
+	# Ignore other characters so the pawn does not freeze against the player/knights.
 	var from := Vector2(global_position.x, _feet_y() - max_step_up - 2.0)
 	var to := from + Vector2(facing_dir * look_ahead, 0.0)
-	return not _intersect_ground(from, to).is_empty()
+	var hit := _intersect_ground(from, to)
+	if hit.is_empty():
+		return false
+	return not (hit.collider is CharacterBody2D)
 
 
 func _ground_ahead() -> Dictionary:
@@ -325,9 +382,8 @@ func _intersect_ground(from: Vector2, to: Vector2) -> Dictionary:
 func _play_state_animation() -> void:
 	var kind := "idle"
 	if state == States.ATTACK:
-		if phase == Phase.CHARGE:
-			kind = "attack"
-	elif state == States.WALK and absf(velocity.x) > 1.0:
+		kind = "attack"
+	elif (state == States.WALK or state == States.REPOSITION) and absf(velocity.x) > 1.0:
 		kind = "walk"
 
 	var anim := _anim(kind)

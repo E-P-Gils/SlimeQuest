@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://thc88k40qkr4"]
+
+[ext_resource type="Script" uid="uid://56gccxc5cqsc" path="res://stickblock.gd" id="1_xbut5"]
+[ext_resource type="Texture2D" uid="uid://g6xsiet564dc" path="res://assets/sprites/blocks/green_block_transparent.png" id="2_ekw7u"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n1xc0"]
+atlas = ExtResource("2_ekw7u")
+region = Rect2(0, 0, 734, 779)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bxiyo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n1xc0")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bxiyo"]
+size = Vector2(14, 15)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p4kkq"]
+size = Vector2(14, 16)
+
+[node name="stickblock" type="RigidBody2D" unique_id=2145206075]
+script = ExtResource("1_xbut5")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1737667904]
+scale = Vector2(0.02, 0.02)
+sprite_frames = SubResource("SpriteFrames_bxiyo")
+animation = &"idle"
+
+[node name="pickup" type="Area2D" parent="." unique_id=2963926]
+collision_layer = 3
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="pickup" unique_id=1805725725]
+shape = SubResource("RectangleShape2D_bxiyo")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1374223428]
+position = Vector2(0, 7)
+target_position = Vector2(0, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=808766144]
+shape = SubResource("RectangleShape2D_p4kkq")

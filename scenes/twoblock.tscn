@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://1cncmy0805ub"]
+
+[ext_resource type="Script" uid="uid://dqfnbw66pwruv" path="res://twoblock.gd" id="1_nr6kk"]
+[ext_resource type="Texture2D" uid="uid://dopsvqmitmryr" path="res://assets/sprites/blocks/orange_2_block_transparent.png" id="2_b7ysl"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0a133"]
+atlas = ExtResource("2_b7ysl")
+region = Rect2(0, 0, 735, 779)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bxiyo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0a133")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p4kkq"]
+size = Vector2(14, 15)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bxiyo"]
+size = Vector2(14, 16)
+
+[node name="twoblock" type="RigidBody2D" unique_id=465939662]
+script = ExtResource("1_nr6kk")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=689589740]
+scale = Vector2(0.02, 0.02)
+sprite_frames = SubResource("SpriteFrames_bxiyo")
+animation = &"idle"
+
+[node name="pickup" type="Area2D" parent="." unique_id=2020888595]
+collision_layer = 3
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="pickup" unique_id=1436593843]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_p4kkq")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1119337109]
+shape = SubResource("RectangleShape2D_bxiyo")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=2146831244]
+position = Vector2(0, 7)
+target_position = Vector2(0, 1)

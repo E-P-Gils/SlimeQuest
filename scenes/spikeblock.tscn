@@ -1,0 +1,62 @@
+[gd_scene format=3 uid="uid://h4k1pf14ernm"]
+
+[ext_resource type="Script" uid="uid://d3t2dqp6k773n" path="res://spikeblock.gd" id="1_er7dc"]
+[ext_resource type="Texture2D" uid="uid://c0swv3pybiipr" path="res://assets/sprites/blocks/Spike_Trap_godot_spritesheet.png" id="2_umk64"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c0fcn"]
+atlas = ExtResource("2_umk64")
+region = Rect2(0, 0, 384, 640)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o3b43"]
+atlas = ExtResource("2_umk64")
+region = Rect2(384, 0, 384, 640)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_noyv6"]
+atlas = ExtResource("2_umk64")
+region = Rect2(768, 0, 384, 640)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bxiyo"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c0fcn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o3b43")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_noyv6")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bxiyo"]
+size = Vector2(36, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p4kkq"]
+size = Vector2(28, 40)
+
+[node name="spikeblock" type="RigidBody2D" unique_id=3381918]
+scale = Vector2(0.1, 0.1)
+script = ExtResource("1_er7dc")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1060075395]
+scale = Vector2(0.1, 0.1)
+sprite_frames = SubResource("SpriteFrames_bxiyo")
+animation = &"idle"
+
+[node name="pickup" type="Area2D" parent="." unique_id=1545593117]
+position = Vector2(0, 15)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="pickup" unique_id=1994999263]
+shape = SubResource("RectangleShape2D_bxiyo")
+
+[node name="RayCast2D" type="RayCast2D" parent="." unique_id=1219449910]
+position = Vector2(0, 27)
+target_position = Vector2(0, 4)
+
+[node name="spiketop" type="CollisionShape2D" parent="." unique_id=1623139228]
+position = Vector2(0, -10)
+shape = SubResource("RectangleShape2D_p4kkq")
